@@ -1,0 +1,483 @@
+Project 2 Report text content
+
+Readme to be inserted
+
+Pseudocode
+
+def longest_increasing_powerset(A):
+    n = A.size()
+    sequence best
+    stack = a vector containing (n+1) elements
+    // stack[0] is ununsed, so there are actually n relevant elements
+    k = 0
+    while (true) do // repeat loop until break is called
+
+        if (stack[k] < n) then
+            stack[k+1] = stack[k] + 1
+            ++k
+        else
+            stack[k-1]++
+            k--
+
+        if (k == 0) break
+
+        sequence candidate
+        for i = 1 to k do
+            insert A[stack[i]-1] at the end of candidate
+        endfor
+
+        if (candidate is an increasing sequence) then
+            if (best == sequence{0} || candidate.size() > best.size()) then
+                best = candidate
+            // else do nothing
+            endif
+            // else do nothing
+        endif
+
+    endwhile
+
+    return best
+
+
+
+Efficiency Analysis
+
+def longest_increasing_powerset(A):
+    n = A.size()    // 2 steps
+    sequence best   // 1 step
+    stack = a vector containing (n+1) elements // 2 steps
+    // stack[0] is ununsed, so there are n relevant elements
+    k = 0   // 1 step
+    while (true) do // 2^n times; each loop generates an element (set) of the powerset and tests its candidacy until the whole powerset is generated and analyzed
+
+        if (stack[k] < n) then  // 1 step
+            stack[k+1] = stack[k] + 1   // 2 steps
+            ++k     // 1 step
+        else
+            stack[k-1]++    // 1 step
+            k--         // 1 step
+
+        if (k == 0) break   // 1 step
+        // else do nothing
+        sequence candidate // 1 step
+        for i = 1 to k do  // k <= n times
+            insert A[stack[i]-1] at the end of candidate // 2 steps
+        endfor
+
+        if (candidate is an increasing sequence) then   // (candidate.size()) steps <= n steps
+            if (best == sequence{0} || candidate.size() > best.size()) then     // 5 steps
+                best = candidate    // 1 step
+            // else do nothing    // 0
+            endif
+        // else do nothing    // 0
+        endif
+        // repeat loop until break condition is met
+    endwhile
+
+    return best  // 0
+
+
+
+Step Count Analysis
+
+Outside Operations: 2 + 1 + 2 + 1 = 6 steps
+    While condition: 2^n times
+        If-else block: 1 + max(3, 2) = 4 steps
+        break check: 1 step
+        declare candidate: 1 step
+        For loop: n times
+            inside for block: 2 steps
+
+        candidate verifier: n steps
+            optimization comparison: max(5, 5+1) = 6 steps
+
+    Entire while block = 2^n * (4 + 1 + 1 + 2*n + 6*n) = 2^n * (8n + 6)
+Entire algorithm = 2^n * (8n+6) + 6 steps
+
+
+
+Proof by definition
+Let f(n) = (2^n)(8n+6) + 6 and g(n) = n * 2^n.
+Then, f(n) = O(g(n)) if there exists some c > 0 and n_0 >= 0 such that f(n) <= c * g(n) for all n >= n_0.
+Choose c = 20. Then c * g(n) = 20 * n * 2^n
+(2^n)(8n+6) + 6 <?= 20n * 2^n
+Try n = 1:
+(2^1)(8*1 + 6) + 6 <?= 20 * 1 * 2^1
+(2)(14) + 6 <?= 20 * 2
+28 + 6 <?= 40
+34 <= 40 True
+Thus, (2^n)(8n+6) + 6 <= c * (n)(2^n) for c = 20 and all n >= n_0 = 1.
+Therefore, f(n) belongs to O(g(n)) = O(n * 2^n)
+Our longest subsequence problem runs in exponential time.
+
+
+Proof by limit theorem
+Let T(n) = (2^n)(8n+6) + 6 and f(n) = n * 2^n.
+Then, T(n) = O(f(n)) if lim_{n->+INF}(T(n)/f(n)) >=0 and a constant (not infinity)
+lim_{n->+INF}(T(n)/f(n)) = lim_{n->+INF}[((2^n)(8n+6) + 6)/(n * 2^n)] //
+= lim_{n->+INF}[((2^n)(8n+6) + 6)'/(n * 2^n)']
+= lim_{n->+INF}[((8n * 2^n + 6 * 2^n) + 6)'/(2^n + n)']
+= lim_{n->+INF}[(8 * 2^n + 8n * 2^n ln 2 + 6 * 2^n ln 2)/(n * 2^n ln 2 + 2^n)]
+= lim_{n->+INF}[((2^n)(8 + 8n ln 2 + 6 ln 2))/((2^n)(n ln 2 + 1))] // divide by 2^n
+= lim_{n->+INF}[(8 + 8n ln 2 + 6 ln 2)/(n ln 2 + 1)]
+= lim_{n->+INF}[(8 + 8n ln 2 + 6 ln 2)'/(n ln 2 + 1)']
+= lim_{n->+INF}[(8 ln 2)/(ln 2)] = 8 >= 0 and a constant
+Since 8 >= 0 and a constant, T(n) belongs to O(f(n)).
+Thus, (2^n)(8n + 6) + 6 belongs to O(n * 2^n).
+Our algorithm runs in exponential time.
+
+
+
+Empirical Analysis
+
+The inputs chosen to represent the best-fit plot were those n-values for which the algorithm's elapsed time exceeded 1 second, but still completed within a (somewhat) reasonable amount of time. 
+The range of n-values from 21 to 34 led to suitable runtimes for empirical analysis. A trendline regression equation was calculated to be (7/10^7) * e^(0.7089n) with R^2 = 1 (strongest correlation).
+Comparing the functions 2^n and e^(0.7089n) we see they are very similar, with e^(0.7089n) growing only very slightly faster.
+
+I hypothesized that it is likely that 2^n * (1 + cn), for some small positive constant c << 1, can closely approximate the function e^(0.7089n).
+2^1 is very very close to e^0.69315.
+2^n ~ e^(0.69315n) and e^(0.7089n) = e^(0.69315n) * e^(0.01575n), so the difference in growth is approximately e^(0.01575n) ~ 1 + 0.02n for our sample range of inputs.
+
+Both approximations are at least 97% accurate for all tested values of n. The crucial approximation of 2^n ~ e^(0.69315n) is more than 99.99% accurate for any practical input of n.
+Therefore, (7/10^7) * e^(0.7089n) ~ (7/10^7) * 2^n (1 + 0.02n)
+We can drop the tiny constant factor 7/10^7 from both sides. This is dependent on CPU instructions per clock and clock speeds.
+Thus, e^(.7089n) ~ (2^n)(1 + 0.02n) = O(n * 2^n)
+
+Proof:
+
+Let T(n) = (2^n)(1 + 0.02n) and f(n) = (n * 2^n).
+If lim_{n->+inf}(T(n)/f(n)) >= 0 and a constant then T(n) = O(f(n)).
+lim_{n->+inf}(T(n)/f(n)) = lim_{n->+inf}[(2^n)(1 + 0.02n) / (n * 2^n)] // divide by 2^n
+= lim_{n->+inf}[(1 + 0.02n) / (n)]
+= lim_{n->+inf}[(1 + 0.02n)' / (n)']
+= lim_{n->+inf}(0.02 / 1) = 0.02 >= 0 and a constant.
+Thus, (2^n)(1 + 0.02n) = O(n * 2^n)
+From our step count analysis, (2^n)(8n + 6) + 6 also belongs to O(n * 2^n)
+
+
+Evaluation of Hypotheses
+
+Hypothesis 1 states: For large values of n, the mathematically-derived efficiency class of an algorithm accurately predicts the observed running time of an implementation of that algorithm..
+Hypothesis 2 states: Algorithms with exponential or factorial running times are extremely slow, probably too slow to be of practical use.
+
+
+The observed empirical results are strongly consistent with expectations from the mathematical derivation, both of which support the exponential complexity of this algorithm and thus Hypothesis 1. The experimental data has the strongest possible correlation and its regression trendline closely matches the complexity of our prediction. We can disregard constant multipliers in asymptotic analysis because they are dependent on other factors such as computational speed. They do not influence the order of a function.
+
+This algorithm is unbearably slow beyond n = 30 and useless around n = 40 compared to polynomial-time or faster algorithms, as seen in the results by the rapidly growing elapsed time with respect to the input size n. Our exponential algorithm solved inputs below n = 21 in under 1 second, n = 21 in 1.9 seconds, and n = 24 in 16 seconds, but for n = 34 it took over 5.3 hours. From the empirical data, an increase of 10 in the input size leads to a 1200-fold increase in the runtime! This supports Hypothesis 2 which predicts that algorithms with exponential (or factorial) running times are so slow as to be virtually unusable for real-world scenarios. A more optimized polynomial or linearithmic time algorithm could solve even n = 50 in milliseconds at worst; our exponential algorithm would still be running after 50 years!
+
+
+Test Output Results
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_test.cpp -o subsequence_test && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_test
+test 1: passed, score 1/1
+test 2: passed, score 1/1
+test 3: passed, score 1/1
+test 4: passed, score 1/1
+test 5: passed, score 1/1
+test 6: passed, score 1/1
+test 7: passed, score 1/1
+test 8: passed, score 1/1
+TOTAL SCORE = 8 / 8
+
+
+[Done] exited with code=0 in 1.144 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.934694 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.809 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.933482 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.788 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.937997 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.831 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.930596 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.777 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.932818 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.801 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.937421 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.802 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 30
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71, 337]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=1126.73 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1127.635 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 29
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=550.383 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 551.282 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 32
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71, 337, 87, 648]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=4639.15 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 4640.034 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 33
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71, 337, 87, 648, 20]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=9457 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 9457.949 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 31
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71, 337, 87]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=2296.47 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 2297.355 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 28
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=271.023 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 271.946 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 27
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=133.257 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 134.158 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 26
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=65.5787 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 66.454 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 25
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=32.4138 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 33.268 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 24
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=16.0342 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 16.905 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 23
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=7.89455 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 8.739 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 22
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=3.88977 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 4.75 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 21
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=1.90864 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 2.787 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 20
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.933236 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.817 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 19
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.457717 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.329 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 18
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 715, 845, 858, 892, 964]
+of length = 7
+elapsed time=0.223204 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 1.082 seconds
+
+[Running] cd "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\" && g++ subsequence_timing.cpp -o subsequence_timing && "c:\Users\Icehole\Documents\GitHub\project-2-exhaustive-longest-increasing-wayne-project-2\"subsequence_timing
+-------------------------------------------------------------------------------
+n = 34
+[549, 593, 715, 845, 603, 858, 545, 848, 424, 624, 646, 384, 438, 297, 892, 56, 964, 272, 383, 478, 792, 812, 529, 480, 568, 393, 926, 836, 71, 337, 87, 648, 20, 368]
+-------------------------------------------------------------------------------
+powerset
+output = [549, 593, 603, 624, 646, 792, 812, 926]
+of length = 8
+elapsed time=19247.8 seconds
+-------------------------------------------------------------------------------
+
+[Done] exited with code=0 in 19248.709 seconds
+
